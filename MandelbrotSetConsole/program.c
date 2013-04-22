@@ -67,9 +67,9 @@ int mandelbrotEscapeTime (int maxIterations, double x, double y) {
     calcY = 0;
     iteration = 0;
     while ((iteration < maxIterations) &&
-            (calcX * calcX + calcY * calcX < 2 * 2)) {
-        calcTempX = (calcX * calcX - calcX * calcX) + x;
-        calcY = (2 * calcX * calcX) + y;
+            (calcX * calcX + calcY * calcY < 2 * 2)) {
+        calcTempX = (calcX * calcX - calcY * calcY) + x;
+        calcY = (2 * calcX * calcY) + y;
         calcX = calcTempX;
     
         iteration++;
