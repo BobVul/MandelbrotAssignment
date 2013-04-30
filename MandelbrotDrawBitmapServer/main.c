@@ -225,8 +225,8 @@ void generateBitmapImage(unsigned char bmpData[],
             bitmapColumn = drawingX * BITMAP_BYTES_PER_PIXEL;
             iterations = escapeSteps(scaledX, scaledY);
             bmpData[bitmapRow + bitmapColumn] = stepsToBlue(iterations);
-            bmpData[bitmapRow + bitmapColumn + 1] = stepsToBlue(iterations);;
-            bmpData[bitmapRow + bitmapColumn + 2] = stepsToBlue(iterations);;
+            bmpData[bitmapRow + bitmapColumn + 1] = stepsToGreen(iterations);;
+            bmpData[bitmapRow + bitmapColumn + 2] = stepsToRed(iterations);;
 
             drawingX++;
         }
