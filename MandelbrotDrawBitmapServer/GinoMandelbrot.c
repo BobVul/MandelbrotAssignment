@@ -38,26 +38,26 @@
 #define BITMAP_WIDTH 512
 #define BITMAP_BYTES_PER_PIXEL 3
 
-int waitForConnection (int serverSocket);
-int makeServerSocket (int portno);
-void serveViewer(int socket);
-void serveBMP (int socket, double centreX, double centreY, int zoom);
-void generateBitmapImage(unsigned char bmpData[],
-                         double centreX, double centreY, int zoom);
-// dealing with non-integer exponents is difficult and unnecessary
-double power(int base, int exponent);
-
-int getValuesFromConnectionString(char* connectionString,
-                                    double* x, double* y, int* z);
-double readDoubleFromString(char* string);
-int readIntFromString(char* string);
-static void testEscapeSteps(void);
-
 #define SIMPLE_SERVER_VERSION 1.0
 #define REQUEST_BUFFER_SIZE 1000
 #define DEFAULT_PORT 1917
 #define NUMBER_OF_PAGES_TO_SERVE 1000000
 // after serving this many pages the server will halt
+
+static int waitForConnection (int serverSocket);
+static int makeServerSocket (int portno);
+static void serveViewer(int socket);
+static void serveBMP (int socket, double centreX, double centreY, int zoom);
+static void generateBitmapImage(unsigned char bmpData[],
+                         double centreX, double centreY, int zoom);
+// dealing with non-integer exponents is difficult and unnecessary
+static double power(int base, int exponent);
+
+static int getValuesFromConnectionString(char* connectionString,
+                                    double* x, double* y, int* z);
+static double readDoubleFromString(char* string);
+static int readIntFromString(char* string);
+static void testEscapeSteps(void);
 
 int main (int argc, char *argv[]) {
 
@@ -86,14 +86,18 @@ int main (int argc, char *argv[]) {
         // were we able to read any data from the connection?
         // print entire request to the console
         printf (" *** Received http request ***\n %s\n", request);
-        //send the browser a simple html page using http
-        printf (" *** Sending http response ***\n");
 
         double x, y;
         int z;
         if (getValuesFromConnectionString(request, &x, &y, &z) == TRUE) {
+            printf("Read values from connection string:\n");
+            printf("X: %lf\n", x);
+            printf("Y: %lf\n", y);
+            printf("Z: %d\n", z);
+            printf (" *** Sending bitmap response ***\n");
             serveBMP(connectionSocket, x, y, z);
         } else {
+            printf (" *** Sending AlmondBread viewer response ***\n");
             serveViewer(connectionSocket);
         }
 
@@ -107,7 +111,7 @@ int main (int argc, char *argv[]) {
     return EXIT_SUCCESS;
 }
 
-void serveViewer(int socket) {
+static void serveViewer(int socket) {
     char* message = "HTTP/1.0 200 OK\r\n"
         "Content-Type: text/html\r\n"
         "\r\n"
@@ -117,16 +121,12 @@ void serveViewer(int socket) {
     write(socket, message, strlen(message));
 }
 
-void serveBMP (int socket, double centreX, double centreY, int zoom) {
+static void serveBMP (int socket, double centreX, double centreY, int zoom) {
     char* message;
     // first send the http response header
-    // (if you write stings one after another like this on separate
-    // lines the c compiler kindly joins them togther for you into
-    // one long string)
     message = "HTTP/1.0 200 OK\r\n"
               "Content-Type: image/bmp\r\n"
               "\r\n";
-    printf ("about to send=> %s\n", message);
     write (socket, message, strlen (message));
 
     // Send the header for a bitmap of size 512x512
@@ -142,7 +142,7 @@ void serveBMP (int socket, double centreX, double centreY, int zoom) {
 
     write (socket, bmpHeader, sizeof(bmpHeader));
 
-    // Generate image data
+    // Generate image data and send it
     int bitmapSize;
     bitmapSize = BITMAP_HEIGHT * BITMAP_WIDTH;
     bitmapSize *= BITMAP_BYTES_PER_PIXEL;
@@ -154,7 +154,7 @@ void serveBMP (int socket, double centreX, double centreY, int zoom) {
 
 
 // start the server listening on the specified port number
-int makeServerSocket (int portNumber) {
+static int makeServerSocket (int portNumber) {
     // create socket
     int serverSocket = socket (AF_INET, SOCK_STREAM, 0);
     assert (serverSocket >= 0);
@@ -189,7 +189,7 @@ int makeServerSocket (int portNumber) {
 
 // wait for a browser to request a connection,
 // returns the socket on which the conversation will take place
-int waitForConnection (int serverSocket) {
+static int waitForConnection (int serverSocket) {
     // listen for a connection
     const int serverMaxBacklog = 10;
     listen (serverSocket, serverMaxBacklog);
@@ -207,7 +207,7 @@ int waitForConnection (int serverSocket) {
     return (connectionSocket);
 }
 
-void generateBitmapImage(unsigned char bmpData[],
+static void generateBitmapImage(unsigned char bmpData[],
                          double centreX, double centreY, int zoom) {
     int drawingX;
     int drawingY;
@@ -251,7 +251,7 @@ void generateBitmapImage(unsigned char bmpData[],
     }
 }
 
-double power(int base, int exponent) {
+static double power(int base, int exponent) {
 	// function to calculate powers given an exponent
     int i = 0;
     double calcResult = 1;
@@ -263,7 +263,7 @@ double power(int base, int exponent) {
     return calcResult;
 }
 
-int getValuesFromConnectionString(char* connectionString,
+static int getValuesFromConnectionString(char* connectionString,
                                     double* x, double* y, int* z) {
     int index = 0;
     int isXSet = FALSE;
@@ -319,7 +319,7 @@ int getValuesFromConnectionString(char* connectionString,
     return isXSet && isYSet && isZSet;
 }
 
-double readDoubleFromString(char* str) {
+static double readDoubleFromString(char* str) {
     int index = 0;
     double value = 0;
     int afterDecimalPoint = FALSE;
@@ -385,7 +385,7 @@ double readDoubleFromString(char* str) {
     return value;
 }
 
-int readIntFromString(char* str) {
+static int readIntFromString(char* str) {
     int index = 0;
     int value = 0;
     int isNegative = FALSE;
